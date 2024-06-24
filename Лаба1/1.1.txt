@@ -1,0 +1,26 @@
+Без предикатов
+
+recur([],[],"").
+recur([T],[],T).
+recur([X|Tail],[X|F],T):- recur(Tail,F,T).
+
+shuffle(X,[T|Q]):- recur(X,Q,T).
+
+
+
+C предикатами
+
+append([], X, X).
+append([A|X], Y, [A|Z]) :- append(X,Y,Z).
+
+shuffle([],[]).
+shuffle(X,[B|A]):-append(A,[B],X), !. 
+
+Запросы:
+
+?-shuffle([a,b,c],X), write(X).
+?-shuffle([a,b,c,d,e,f,g],X), write(X).
+?-shuffle([a,b],X), write(X).
+?-shuffle([a],X), write(X).
+
+

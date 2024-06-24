@@ -1,0 +1,205 @@
+parents('Артём', 'Андрей', 'Света').
+parents('Андрей', 'Валентин', 'Вера').
+parents('Валентин', 'Пётр', 'Клава').
+parents('Вера', 'Папа', 'Мама').
+parents('Нюра', 'Папа', 'Мама').
+parents('Ола', 'Кумыс', 'Нюра').
+parents('Пиво', 'Аркадий', 'Ола').
+parents('Зубр', 'Пётр', 'Клава').
+parents('Кирилл', 'Зубр', 'Жасмин').
+parents('Ангелина', 'Кирилл', 'Шура').
+parents('Света', 'Саша', 'Надя').
+parents('Дима', 'Саша', 'Надя').
+parents('Ангелина2', 'Дима', 'Юля').
+parents('Надя', 'Вася', 'Маша').
+parents('Галя', 'Вася', 'Маша').
+parents('Таня', 'Андрей', 'Света').
+parents('Олег', 'Александр', 'Галя').
+parents('Вика', 'Олег', 'Ольга').
+
+
+append([], X, X).
+append([A|X], Y, [A|Z]) :- append(X,Y,Z).
+
+father(A,B):- parents(B,A,_).
+mother(A,B):- parents(B,_,A).
+husband(A,B):- parents(_,A,B).
+wife(A,B):- parents(_,B,A).
+son_daug(A,B):- (parents(A,_,B);parents(A,B,_)).
+bro_sis(A,B):- mother(C,A),father(D,A), mother(C,B), father(D,B), B\=A.
+grandma(A,B):- mother(C,B), father(D,B), (mother(A,C);mother(A,D)).
+grandpa(A,B):- mother(C,B), father(D,B), (father(A,C);father(A,D)).
+grandson_granddaug(A,B):- (grandma(B,A);grandpa(B,A)).
+uncle_aunt(A,B):- mother(C,B), father(D,B), (bro_sis(A,C);bro_sis(A,D)).
+nep_niece(A,B):- uncle_aunt(B,A).
+grandgrandma(A,B):- grandma(C,B), grandpa(D,B), (mother(A,C);mother(A,D)).
+grandgrandpa(A,B):- grandma(C,B), grandpa(D,B), (father(A,C);father(A,D)).
+
+third_bro_sis1(A,B):- grandgrandma(GG1,A),grandgrandpa(GG2,A),
+				setof(X1,grandma(X1,A),G11),
+				setof(X2,grandma(X2,A),G22),
+    			setof(X3,grandpa(X3,A),G33),
+				setof(X4,grandpa(X4,A),G44),
+				append(G11,G22,G111),
+    			append(G33,G44,G222),
+    			append(G111,G222,G),
+    			setof(X5,son_daug(X5,GG1),F1),
+    			setof(X6,son_daug(X6,GG2),F2),
+                append(F1,F2,F),
+                member(S,F), not(member(S,G)),
+                setof(X7,grandson_granddaug(X7,S),Q),
+    			member(B,Q).
+
+third_bro_sis(A,B):- setof(X,third_bro_sis1(A,X),S), member(B,S).
+
+rel(A,B,father):-father(A,B).
+rel(A,B,mother):-mother(A,B).
+rel(A,B,husband):-husband(A,B).
+rel(A,B,wife):-wife(A,B).
+rel(A,B,son_daug):-son_daug(A,B).
+rel(A,B,bro_sis):-bro_sis(A,B).
+rel(A,B,grandma):-grandma(A,B).
+rel(A,B,grandpa):-grandpa(A,B).
+rel(A,B,grandson_granddaug):-grandson_granddaug(A,B).
+rel(A,B,uncle_aunt):-uncle_aunt(A,B).
+rel(A,B,nep_niece):-nep_niece(A,B).
+rel(A,B,grandgrandma):-grandgrandma(A,B).
+rel(A,B,grandgrandpa):-grandgrandpa(A,B).
+rel(A,B,third_bro_sis):-third_bro_sis(A,B).
+
+rel_name([],R, R) :- !.
+rel_name([_], R, R) :- !.
+rel_name([A,B|S], N, R) :- 
+		rel(A, B, C), 
+		rel_name([B|S], [C|N], R).
+
+move(X, Y) :- rel(X, Y, _).
+
+prolong([X|T], [Y,X|T]) :- move(X, Y), not(member(Y, [X|T])).
+
+integer1(1).
+integer1(M):- integer1(N), M is N+1.
+
+pro_dfs([X|T], X, R, 0) :- reverse([X|T], R).
+pro_dfs(P, Y, F, L) :- 
+	L > 0, prolong(P, P1), 
+	L1 is L - 1, pro_dfs(P1, Y, F, L1).
+
+path(A, B, R) :- integer1(D), pro_dfs([A], B, R, D).
+
+relative(A, B, R) :- 
+		path(B, A, N), A \= B, rel_name(N, [], R1), 
+		reverse(R1, R).
+
+% Определение пола для NLP запросов (неполноценное, т.к. для людей без детей нельзя определить пол)
+male(X):- parents(_,X,_).
+female(X):- parents(_,_,X).
+% Запросы вида как много
+que_cnt('how many').
+que_cnt('How many').
+que_cnt('how much').
+que_cnt('How much').
+% Запросы вида кто является родственником
+que_rel('who').
+que_rel('Who').
+% Нужно для определения, является ли предложение запросом
+que(Q) :- (que_cnt(Q); que_rel(Q)).
+
+relative1(X) :- rel(_,_,X), !.
+
+name(P) :- (parents(P,_,_);parents(_,P,_);parents(_,_,P)).
+
+% Предлоги 
+prepos_of_act('to').
+prepos_of_act('for').
+% Чтобы делать запросы вида Rhaella's
+prepos_of_rel('s').
+prepos_of_rel('of').
+% Является ли слово предлогом
+prepos(A) :- 
+	(prepos_of_act(A); prepos_of_rel(A)).
+
+% Местоимения он, она, его, её
+prn_of_ml('he').
+prn_of_ml('him').
+prn_of_fml('she').
+prn_of_fml('her').
+% Является ли слово произведением
+prn(A) :- (prn_of_ml(A); prn_of_fml(A)).
+
+% Разделители запросов
+sep('and').
+sep('?').
+
+% NLP запрос
+nlp(Ask) :- 
+	clr_que(Ask, Ask1),  prn_to_name(Ask1, Ask2), write(Ask2), nl,
+	write("Cleared request: "), write(Ask2), nl, split(Ask2).
+
+% Убираем лишние слова
+delete_trash(A) :- 
+	not(relative1(A)), not(que(A)), not(name(A)), not(prepos(A)), 
+ 	not(prn(A)), not(sep(A)).
+
+% Очистка запроса от лишних слов
+clr_que1([],A,A).
+clr_que1([A|Ask],N_Ask,R) :- delete_trash(A), !, clr_que1(Ask,N_Ask,R).
+clr_que1([A|Ask],N_Ask,R) :- clr_que1(Ask,[A|N_Ask],R).
+
+clr_que(Ask,Ask1) :- clr_que1(Ask,[],Ask2), reverse(Ask2,Ask1).
+
+% Заменяем местоимения на имена, если имя встречалось раньше и пол совпадает
+has_prn(Ask) :- prn(P), member(P,Ask).
+prn_to_name(Ask, Ask) :- not(has_prn(Ask)).
+prn_to_name(Ask, N_Ask) :- 
+	prn_of_ml(Pr), append(S1,[Pr|S2],Ask), 
+	member(X,Ask), name(X), male(X),
+	append(S1,[X|S2],Ask2), prn_to_name(Ask2,N_Ask).
+prn_to_name(Ask,N_Ask) :- 
+	prn_of_fml(Pr), append(P1,[Pr|P2],Ask), 
+	member(X,Ask), name(X), female(X), 
+	append(P1,[X|P2],Ask2), prn_to_name(Ask2,N_Ask).
+
+% Разбиение на составные части (отдельные вопросы)
+split(Ask) :- sep(A), append(S1,[A|S2],Ask), 
+	length(S2, L), L > 0, !, 
+	split(S1), split(S2).
+split(Ask) :- write("Splitted request: "), write(Ask), nl, type_of_que(Ask), !.
+
+% Обработка запросов
+get_pers(L,Z) :- 
+	member(R,L), relative1(R), 
+	member(N,L), name(N), rel(Z,N,R).
+get_rel_ans(L,Z) :- 
+	prepos_of_act(X), append(P1,[X|P2],L),
+	get_act(P1,A1), get_act(P2,A2), 
+    relative(A2,A1,Z).
+% Отличаются, так как 's после слова, а of - перед
+get_rel_ans(L,Z) :- 
+	append(P1,['of'|P2],L), get_rel(P1,R), 
+	get_act(P2,A), rel(Z,A,R).
+get_rel_ans(L,Z) :- 
+	append(P1,['s'|P2],L), get_act(P1,A), 
+	get_rel(P2,R), rel(Z,A,R).
+get_rel_ans(L,Z) :- 
+	get_act(L,A), get_rel(L,R), rel(Z,A,R).
+
+get_act(L,A) :- member(A, L), name(A).
+get_rel(L,R) :- member(R, L), relative1(R).
+
+% Определение типа вопроса
+type_of_que([X|Q]) :- que_cnt(X), !, parse_que_cnt_type(Q).
+type_of_que([X|Q]) :- que_rel(X), !, parse_que_rel_type(Q).
+type_of_que(_) :- write("None"), nl.
+
+% Вывод результатов запросов
+parse_que_cnt_type(Q) :- 
+	write("Question count: "), write(Q), nl, 
+	write("Number of people with this relative: "), 
+	setof(X,get_pers(Q,X),L), length(L, N), 
+	write(N), nl, !.
+parse_que_cnt_type(_) :- write(0), nl.
+parse_que_rel_type(Q) :- 
+	write("Question relative: "), write(Q), nl,
+	write("Name: "), get_rel_ans(Q,X), write(X), nl, !.
+parse_que_rel_type(_) :- write("None"), nl.

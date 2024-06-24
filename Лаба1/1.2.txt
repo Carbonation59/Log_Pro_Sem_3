@@ -1,0 +1,28 @@
+Без предикатов:
+
+min_l([X],X) :- !.
+min_l([X|Tail], M):- min_l(Tail, M), M =< X.
+min_l([X|Tail], X):- min_l(Tail, M), X < M.
+
+?-min_l([5,6,3,7,8],X), write(X).
+
+С предикатами:
+
+append([], X, X).
+append([A|X], Y, [A|Z]) :- append(X,Y,Z).
+
+del_last(L,R):- append(R,[X],L).
+
+last([X],X).
+last([A|Tail],B):-last(Tail,B).
+
+min_l([X]) :- write(X), !.
+min_l([A|B]):- last([A|B],X), A =< X, del_last([A|B],Z), min_l(Z).
+min_l([A|B]):- last([A|B],X), A > X, min_l(B).
+
+
+Запросы:
+
+?-min_l([5,6,3,7,8],X), write(X).
+?-min_l([1],X), write(X).
+?-min_l([20,-15,0,6],X), write(X).

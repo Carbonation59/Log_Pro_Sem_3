@@ -1,0 +1,70 @@
+%bfs
+
+%append([], X, X).
+%append([A|X], Y, [A|Z]) :- append(X,Y,Z).
+
+%path([X|S],[Y|S1],P):-  reverse(X,X1), reverse(Y,Y1), 
+%    					G=[X1|S], G1=[Y1|S1],
+%    					bfth([[G]],G1,P).
+
+%prolong([[X,Y,Z]|T],[R,[X,Y,Z]|T]):- trains(X,Y,Z,R), 
+%					not(member(R,[[X,Y,Z]|T])).
+
+%bfth([[X|T]|_],X,[X|T]).
+%bfth([P|QI],X,R):- findall(Z,prolong(P,Z),T),
+%				append(QI,T,QO),!,
+%				bfth(QO,X,R).
+%bfth([_|T],Y,L):- bfth(T,Y,L).
+
+
+
+%dfs
+
+%path([X|S],[Y|S1],P):-  reverse(X,X1), reverse(Y,Y1), 
+%    					G=[X1|S], G1=[Y1|S1],
+%    					dfs([G],G1,P).
+
+%prolong([[X,Y,Z]|T],[R,[X,Y,Z]|T]):- trains(X,Y,Z,R), 
+%					not(member(R,[[X,Y,Z]|T])).
+
+%dfs([X|T],X,[X|T]).
+%dfs(P,Y,F):- prolong(P,P1), 
+%			dfs(P1,Y,F).
+
+
+%pro_dfs
+
+%integer1(1).
+%integer1(M):- integer1(N), M is N+1.
+
+%path([X|S],[Y|S1],P):-  reverse(X,X1), reverse(Y,Y1), 
+%    					G=[X1|S], G1=[Y1|S1],
+%    					integer1(L), pro_dfs([G],G1,P,L), !.
+
+%prolong([[X,Y,Z]|T],[R,[X,Y,Z]|T]):- trains(X,Y,Z,R), 
+%					not(member(R,[[X,Y,Z]|T])).
+
+%pro_dfs([X|T],X,[X|T],_).
+%pro_dfs(P,Y,F,L):- L>0, L1 is L-1,
+%   		prolong(P,P1), 
+%			pro_dfs(P1,Y,F,L1).
+
+printlist([]) :- !.
+printlist([[A|S]|L]):- reverse(A,A1), G=[A1|S], write(G), nl, printlist(L).
+
+
+trains(['b'|X],Y,Z,R):- R=[X,['b'|Y],Z].
+trains(['w'|X],Y,Z,R):- R=[X,Y,['w'|Z]].
+
+trains(['w'|X],Y,Z,R):- R=[X,['w'|Y],Z].
+trains(['b'|X],Y,Z,R):- R=[X,Y,['b'|Z]].
+
+trains(X,['b'|Y],Z,R):- R=[['b'|X],Y,Z].
+trains(X,Y,['w'|Z],R):- R=[['w'|X],Y,Z].
+
+trains(X,['w'|Y],Z,R):- R=[['w'|X],Y,Z].
+trains(X,Y,['b'|Z],R):- R=[['b'|X],Y,Z].
+
+trains(X,[],[],R):- R=[X,[],[]].
+
+?-path([['b','b','b','w','w','w'],[],[]],[['b','w','b','w','b','w'],[],[]],X),reverse(X,L),printlist(L),nl.

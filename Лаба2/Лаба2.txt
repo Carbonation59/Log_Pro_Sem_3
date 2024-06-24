@@ -1,0 +1,59 @@
+open(X,'obyv'):- not(X='pn'), not(X='vs').
+open(X,'hoz'):- not(X='vt'), not(X='vs').
+open(X,'prod'):- not(X='cht'), not(X='vs').
+open(X,'par'):- not(X='vt'),not(X='cht'), not(X='sb'), not(X='vs').
+
+count(N,R,A,[A|_]):- N is R.
+count(N,R,A,[_|T]):- R1 is R+1, count(N,R1,A,T).
+
+find(1,A,[A|_]).
+find(N,B,[_|T]):- N1 is N-1, find(N1,B,T).
+
+prev('pn','vs',_).
+prev(A,B,T):- count(N,1,A,T), N1 is N-1, find(N1,B,T).
+
+next(A,B,T):- count(N,1,A,T), N1 is N+1, find(N1,B,T).
+
+member(A, [A|_]).
+member(A, [_|Z]) :- member(A, Z).
+
+remove(X,[X|T],T).
+remove(X,[Y|T],[Y|T1]):-remove(X,T,T1).
+
+permute([],[]).
+permute(L,[X|T]):-remove(X,L,R),permute(R,T).
+
+shop1('pn',_,_,_).
+shop1(X,Y1,Y2,T):- prev(X,A,T),
+				(not(open(A,Y1)),open(A,Y2);
+				open(A,Y1),not(open(A,Y2))),
+				shop1(A,Y1,Y2,T).
+
+shop(X,Y,'jenya',T):- prev(X,A,T),open(A,Y),next(X,B,T), open(B,Y).
+shop(X,Y,'ira',T):- next(X,B,T), not(open(B,Y)).
+shop(X,Y,'klava',T):- prev(X,A,T),open(A,Y), prev(A,B,T), open(B,Y).
+shop(_,_,'asya',_). 
+
+shop_jenya(S,G,K):- count(N,1,'jenya',G), find(N,K,S).
+shop_asya(S,G,K):- count(N,1,'asya',G), find(N,K,S).
+		
+solve(D,G,S):- member(A,D), 
+			G=[G1,G2,G3,G4],
+			permute([S1,S2,S3,S4],S),
+			shop(A,S1,G1,D),
+			shop(A,S2,G2,D),
+			shop(A,S3,G3,D),
+			shop(A,S4,G4,D),
+			shop_jenya(S,G,K),
+			shop_asya(S,G,L),
+			shop1(A,L,K,D),
+			write(G1),write('-'),write(S1),nl,
+			write(G2),write('-'),write(S2),nl,
+			write(G3),write('-'),write(S3),nl,
+			write(G4),write('-'),write(S4),nl,
+			write(A),nl.	
+
+?- Days = ['pn','vt','sr','cht','pt','sb'],
+	Girls = ['asya','ira','klava','jenya'],
+	Shops = ['obyv','par','prod','hoz'],
+	solve(Days,Girls,Shops).

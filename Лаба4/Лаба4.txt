@@ -1,0 +1,85 @@
+:-op(200, xfy, ':').
+
+find(V1, V) :-
+    verbs(Abc),
+    member(A, Abc), conditional(V1, V, A).
+
+conditional(V1, V, V : A) :-
+    member(V1, A).
+
+
+an_q(['Кто', V1, A, _], X) :- 
+    find(V1, V),
+    X=..[V, agent(y), object(A)].
+
+an_q(['Что', V1, A, _], X) :- 
+    find(V1, V),
+    agents(L),
+    member(A, L),
+    X=..[V, agent(A), object(y)].
+
+an_q(['Где', V1, A, _], X) :- 
+    find(V1, V),
+    objects(L),
+    member(A, L),
+    X=..[V, object(A), loc(x)].
+
+an_q(['Где', V1, A, _], X) :- 
+    find(V1, V),
+    agents(L),
+    member(A, L),
+    X=..[V, agent(A), loc(x)].
+
+an_q(['Почему', A, V1, _], X) :- 
+    find(V1, V),
+    objects(L),
+    member(A, L),
+    X=..[V, object(A), reas(z)].
+
+an_q(['Почему', A, V1, _], X) :- 
+    find(V1, V),
+    agents(L),
+    member(A, L),
+    X=..[V, agent(A), reas(z)].
+
+an_q(['Когда', A, V1, _], X) :- 
+    find(V1, V),
+    objects(L),
+    member(A, L),
+    X=..[V, object(A), time(w)].
+
+an_q(['Когда', V1, A, _], X) :- 
+    find(V1, V),
+    objects(L),
+    member(A, L),
+    X=..[V, object(A), time(w)].
+
+an_q(['Когда', A, V1, _], X) :- 
+    find(V1, V),
+    agents(L),
+    member(A, L),
+    X=..[V, agent(A), time(w)].
+
+an_q(['Когда', V1, A, _], X) :- 
+    find(V1, V),
+    agents(L),
+    member(A, L),
+    X=..[V, agent(A), time(w)].
+
+objects(['шоколад', 'деньги', 'фрукты', 'стихи', 'цветок']).
+
+agents(['Даша', 'Ира', 'Артём', 'Геля']).
+
+verbs(Abc) :- Abc = 
+    ['любить' : ['любит', 'любят'],
+    'лежать' : ['лежит', 'лежат'],
+    'читать' : ['читает', 'читают'],
+    'есть' : ['ест', 'едят'],
+    'нюхать' : ['нюхает', 'нюхают']].
+
+an_q(['Кто', 'любит','шоколад', '?'], X), write(X).
+an_q(['Где', 'лежат','деньги', '?'], X), write(X).
+an_q(['Что', 'любит','Даша', '?'], X), write(X).
+an_q(['Почему', 'фрукты','едят', '?'], X), write(X).
+an_q(['Когда', 'цветок','нюхают', '?'], X), write(X).
+an_q(['Когда', 'ест','Артём', '?'], X), write(X).

@@ -1,0 +1,22 @@
+Предикат, реализующий вставку элемента на позицию n с помощью 
+циклического сдвига вправо и определения длины списка.
+
+
+append([], X, X).
+append([A|X], Y, [A|Z]) :- append(X,Y,Z).
+
+length([], 0) . 
+length([_|Y], N) :- length(Y, N1), N is N1 + 1.
+
+shuffle([],[]).
+shuffle(X,[B|A]):-append(A,[B],X), !. 
+
+few_shuffle(A,0,A):-!.
+few_shuffle(A,N,T):-shuffle(A,X),N1 is N-1,few_shuffle(X,N1,T).
+
+set(A,B,N,Z):- length(A,L), S is L-N+1, few_shuffle(A,S,T), R is N-1, few_shuffle([B|T],R,Z).
+
+Пример:
+
+?-set([a,b,c,d],z,3,X), write(X).
+ 

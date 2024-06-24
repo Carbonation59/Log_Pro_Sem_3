@@ -1,0 +1,7 @@
+write_p([]):-!.
+write_p([X]):-write(X), write(". "), !.
+write_p([X|Tail]):- write(X), write(", "), write_p(Tail).
+
+find_para(P,A):- student(_,A,L), member(grade(P,2),L).
+
+find_subj:- subject(T,P), findall(X,find_para(T,X),O), write(P), write(": "), write_p(O), nl. 

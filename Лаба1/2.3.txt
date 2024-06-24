@@ -1,0 +1,9 @@
+write_p([]):-!.
+write_p([X]):-write(X), write(". "), !.
+write_p([X|Tail]):- write(X), write(", "), write_p(Tail).
+
+find_para(P,A):- student(_,A,L), member(grade(P,2),L).
+
+find_groups(L):- findall(Y,student(Y,_,_),X), setof(K,member(K,X),L).
+
+find_sum(L):- findall(X,find_para(_,X),O), member(A,L), findall(T,(student(A,T,_),member(T,O)),Q), write(A), write(": "), length(Q,K), write(K),  nl.
